@@ -1,0 +1,19 @@
+{
+    "required_api_version": "2",
+    "name": "Quick Calculator",
+    "description": "Quick access to a simple mathematical calculator",
+    "developer_name": "Mario Stabile",
+    "icon": "images/icon.png",
+    "options": {
+        "query_debounce": 0.1
+    },
+    "preferences": [
+        {
+            "id": "toggle_keyword",
+            "type": "keyword",
+            "name": "Quick Calculator Toggle",
+            "description": "Toggle Quick Calculator",
+            "default_value": "qc"
+        }
+    ]
+}
