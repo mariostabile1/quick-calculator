@@ -1,4 +1,4 @@
-# Quick Calculator Ulauncher Extension
+# Quick Calculator Extension for Ulauncher
 
 A simple yet powerful scientific calculator for Ulauncher.
 
@@ -20,6 +20,6 @@ Examples:
 ## Installation
 Clone this repository into your Ulauncher extensions directory:
 ```bash
-git clone https://github.com/yourusername/quick-calculator.git ~/.local/share/ulauncher/extensions/com.github.yourusername.quick-calculator
+git clone https://github.com/mariostabile1/quick-calculator.git ~/.local/share/ulauncher/extensions/com.github.mariostabile1.quick-calculator
 ```
 Restart Ulauncher.
