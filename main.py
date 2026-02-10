@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import math
 import logging
 from ulauncher.api.client.Extension import Extension
 from ulauncher.api.client.EventListener import EventListener
@@ -7,32 +6,25 @@ from ulauncher.api.shared.event import KeywordQueryEvent
 from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 from ulauncher.api.shared.action.RenderResultListAction import RenderResultListAction
 from ulauncher.api.shared.action.CopyToClipboardAction import CopyToClipboardAction
+from calculator_logic import Calculator
+from simpleeval import NameNotDefined, OperatorNotDefined, FunctionNotDefined, FeatureNotAvailable
 
 logger = logging.getLogger(__name__)
 
-class DemoExtension(Extension):
+class CalculatorExtension(Extension):
 
     def __init__(self):
-        super(DemoExtension, self).__init__()
+        super(CalculatorExtension, self).__init__()
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
+        self.calculator = Calculator()
 
 class KeywordQueryEventListener(EventListener):
 
     def on_event(self, event, extension):
-        query = event.get_argument() or ""
-        
-        # Define the allowable safe environment
-        # We allow everything from the math module, plus basic builtins if needed (usually none for strict math)
-        safe_dict = {k: v for k, v in math.__dict__.items() if not k.startswith("__")}
-        # Add commonly used aliases if desired, e.g. abs which is a builtin
-        safe_dict['abs'] = abs
-        safe_dict['round'] = round
-        safe_dict['min'] = min
-        safe_dict['max'] = max
-        
+        query = (event.get_argument() or "").strip()
         items = []
 
-        if not query.strip():
+        if not query:
             return RenderResultListAction([
                 ExtensionResultItem(icon='images/icon.png',
                                     name='Type a math expression',
@@ -41,52 +33,28 @@ class KeywordQueryEventListener(EventListener):
             ])
 
         try:
-            # Evaluate the expression in the safe environment
-            # Allow users to ommit 'math.' prefix
-            query = query.replace('^', '**')
-            result = eval(query, {"__builtins__": None}, safe_dict)
-            
-            # Ensure the result is a number (or complex)
-            if not isinstance(result, (int, float, complex)):
-                raise TypeError("Result is not a number")
-
-            # Format the result to remove trailing .0 for integers
-            if isinstance(result, float) and result.is_integer():
-                result_str = str(int(result))
-            else:
-                result_str = str(result)
+            result = extension.calculator.evaluate(query)
+            result_str = extension.calculator.format_result(result)
 
             items.append(ExtensionResultItem(icon='images/icon.png',
                                              name=result_str,
                                              description='Press Enter to copy result',
                                              on_enter=CopyToClipboardAction(result_str)))
-        except SyntaxError:
+        except (NameNotDefined, OperatorNotDefined, FunctionNotDefined, FeatureNotAvailable, SyntaxError, TypeError, ZeroDivisionError, ValueError) as e:
+             # User error
             items.append(ExtensionResultItem(icon='images/icon.png',
-                                             name='Invalid Syntax',
-                                             description='Check your expression (e.g. missing closing parenthesis)',
-                                             on_enter=CopyToClipboardAction('Invalid Syntax')))
-        except (NameError, TypeError):
-            items.append(ExtensionResultItem(icon='images/icon.png',
-                                             name='Input not recognized',
-                                             description='Expression is not valid math (e.g. text or unknown function)',
-                                             on_enter=CopyToClipboardAction('Input not recognized')))
-        except ZeroDivisionError:
-            items.append(ExtensionResultItem(icon='images/icon.png',
-                                             name='Math Error',
-                                             description='Cannot divide by zero',
-                                             on_enter=CopyToClipboardAction('Cannot divide by zero')))
-        except ValueError:
-            items.append(ExtensionResultItem(icon='images/icon.png',
-                                             name='Invalid Value',
-                                             description='Invalid math operation (e.g. sqrt of negative number)',
-                                             on_enter=CopyToClipboardAction('Invalid Value')))
-        except Exception as e:
-            items.append(ExtensionResultItem(icon='images/icon.png',
-                                             name='Error',
+                                             name='Invalid Expression',
                                              description=str(e),
                                              on_enter=CopyToClipboardAction(str(e))))
+        except Exception as e:
+            # Internal or unexpected error
+            logger.error(f"Error evaluating query: {e}", exc_info=True)
+            items.append(ExtensionResultItem(icon='images/icon.png',
+                                             name='Error',
+                                             description="An unexpected error occurred",
+                                             on_enter=CopyToClipboardAction("Error")))
 
         return RenderResultListAction(items)
 
 if __name__ == '__main__':
-    DemoExtension().run()
+    CalculatorExtension().run()
