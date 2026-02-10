@@ -2,7 +2,7 @@
 import unittest
 import math
 from calculator_logic import Calculator
-from simpleeval import NameNotDefined, FunctionNotDefined
+from simpleeval import NameNotDefined, FunctionNotDefined, FeatureNotAvailable
 
 class TestCalculator(unittest.TestCase):
     def setUp(self):
@@ -27,6 +27,12 @@ class TestCalculator(unittest.TestCase):
         self.assertEqual(self.calc.evaluate("5!"), 120)
         self.assertEqual(self.calc.evaluate("degrees(pi)"), 180.0)
         self.assertEqual(self.calc.evaluate("(2+3)!"), 120)
+        self.assertEqual(self.calc.evaluate("log2(8)"), 3.0)
+        self.assertEqual(self.calc.evaluate("floor(log10(100))"), 2)
+        # Test custom logN syntax
+        self.assertEqual(self.calc.evaluate("log3(27)"), 3.0)
+        self.assertEqual(self.calc.evaluate("log10(100)"), 2.0) # Should still work as native function or regex
+        self.assertEqual(self.calc.evaluate("log(8, 2)"), 3.0) # Standard syntax
         
         # Test that != is not broken
         self.assertEqual(self.calc.evaluate("1 != 2"), True)
@@ -44,8 +50,25 @@ class TestCalculator(unittest.TestCase):
         with self.assertRaises((NameNotDefined, FunctionNotDefined)):
             self.calc.evaluate("__import__('os').system('ls')")
         
-        with self.assertRaises((NameNotDefined, FunctionNotDefined)):
+        with self.assertRaises((NameNotDefined, FunctionNotDefined, SyntaxError)):
              self.calc.evaluate("open('test_logic.py')")
+
+        # Test class injection
+        # simpleeval raises FeatureNotAvailable for __attributes
+        with self.assertRaises((NameNotDefined, FunctionNotDefined, SyntaxError, AttributeError, FeatureNotAvailable)):
+            self.calc.evaluate("().__class__.__bases__[0].__subclasses__()")
+            
+        with self.assertRaises((NameNotDefined, FunctionNotDefined, SyntaxError, FeatureNotAvailable)):
+            self.calc.evaluate("10 .__class__")
+            
+        # Test attributes
+        with self.assertRaises((NameNotDefined, FunctionNotDefined, SyntaxError)):
+            self.calc.evaluate("math.sin(1)") # user should not use 'math.' prefix if we didn't expose 'math' name
+            
+        # Test very large numbers (DoS prevention - limited by simpleeval MAX_POWER usually, but Python handles large ints)
+        # simpleeval defaults: MAX_POWER=100000. 2**10000 is fine.
+        # We just check it doesn't crash.
+        self.assertTrue(self.calc.evaluate("2^100") > 0)
 
     def test_formatting(self):
         self.assertEqual(self.calc.format_result(5.0), "5")

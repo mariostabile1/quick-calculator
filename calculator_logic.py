@@ -2,7 +2,7 @@
 import math
 import re
 import logging
-from simpleeval import simple_eval, NameNotDefined, OperatorNotDefined, FunctionNotDefined
+from simpleeval import simple_eval, NameNotDefined, OperatorNotDefined, FunctionNotDefined, FeatureNotAvailable
 
 logger = logging.getLogger(__name__)
 
@@ -12,8 +12,8 @@ class Calculator:
         self.functions = {
             'sin': math.sin, 'cos': math.cos, 'tan': math.tan,
             'asin': math.asin, 'acos': math.acos, 'atan': math.atan,
-            'sqrt': math.sqrt, 'log': math.log, 'log10': math.log10,
-            'exp': math.exp, 'abs': abs, 'round': round,
+            'sqrt': math.sqrt, 'log': math.log, 'log10': math.log10, 'log2': math.log2,
+            'exp': math.exp, 'abs': abs, 'round': round, 'pow': math.pow,
             'min': min, 'max': max, 'factorial': math.factorial,
             'degrees': math.degrees, 'radians': math.radians,
             'ceil': math.ceil, 'floor': math.floor
@@ -34,11 +34,23 @@ class Calculator:
         # 2. identifiers: [a-zA-Z_][a-zA-Z0-9_]*
         # 3. parenthesized groups: \([^)]+\)
         # Followed by ! but NOT followed by = (to avoid !=)
+        factorial_pattern = r'(\d+(?:\.\d+)?|[a-zA-Z_][a-zA-Z0-9_]*|\([^)]+\))!(?!=)'
+        query = re.sub(factorial_pattern, r'factorial(\1)', query)
+
+        # Handle logN(x) syntax, e.g. log3(27) -> log(27, 3)
+        # We look for log followed by digits, then (expr)
+        # Regex uses ([^)]+) to match content inside parens up to the first closing parenthesis.
+        # This prevents it from greedily consuming parentheses of outer functions (e.g. floor(log10(100))).
+        # Limitation: The argument to logN cannot contain ")" (no nested function calls inside logN).
+        log_pattern = r'log(\d+)\(([^)]+)\)'
+        if re.search(log_pattern, query):
+             def replace_log(match):
+                 base = match.group(1)
+                 expr = match.group(2)
+                 return f"log({expr}, {base})"
+             query = re.sub(log_pattern, replace_log, query)
         
-        # Note: This is a basic regex and might not handle nested parenthesis perfectly for (expr)!
-        # but covers common cases.
-        pattern = r'(\d+(?:\.\d+)?|[a-zA-Z_][a-zA-Z0-9_]*|\([^)]+\))!(?!=)'
-        return re.sub(pattern, r'factorial(\1)', query)
+        return query
 
     def evaluate(self, query):
         """
@@ -61,7 +73,7 @@ class Calculator:
                 names=self.names
             )
             return result
-        except (NameNotDefined, OperatorNotDefined, FunctionNotDefined, SyntaxError, TypeError, ZeroDivisionError, ValueError) as e:
+        except (NameNotDefined, OperatorNotDefined, FunctionNotDefined, FeatureNotAvailable, SyntaxError, TypeError, ZeroDivisionError, ValueError) as e:
             # Re-raise known safe exceptions to be handled by the caller
             raise e
         except Exception as e:

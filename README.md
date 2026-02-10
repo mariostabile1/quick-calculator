@@ -7,22 +7,49 @@ A simple yet powerful scientific calculator for Ulauncher, now safer and more ro
 - **Secure Evaluation**: Uses `simpleeval` to safely calculate expressions without executing arbitrary code.
 - **Scientific Functions**: Supports a wide range of math functions including:
     - **Trigonometry**: `sin`, `cos`, `tan`, `asin`, `acos`, `atan`
-    - **Mathematics**: `sqrt`, `log` (ln), `log10`, `exp`, `factorial`, `abs`, `round`, `min`, `max`
+    - **Mathematics**: `sqrt`, `log` (ln), `log10`, `log2`, `exp`, `factorial`, `abs`, `round`, `min`, `max`, `pow`
     - **Constants**: `pi`, `e`, `tau`
     - **Utilities**: `degrees`, `radians`, `ceil`, `floor`
 - **Smart Error Handling**: Provides clear messages for syntax errors or invalid math operations.
 - **Clipboard Integration**: Press `Enter` to copy the calculated result.
 
 ## Usage
+
 Type `qc` followed by your mathematical expression.
 
-Examples:
+### Arithmetic & Basics
 - `qc 2 + 2` -> `4`
-- `qc sqrt(16)` -> `4`
+- `qc 10 / 3` -> `3.33333`
+- `qc 2^10` -> `1024` (Power)
+- `qc sqrt(16)` -> `4` (Square root)
+- `qc abs(-50)` -> `50` (Absolute value)
+- `qc 15 % 4` -> `3` (Modulo)
+
+### Trigonometry
 - `qc sin(pi/2)` -> `1`
+- `qc cos(0)` -> `1`
+- `qc tan(pi/4)` -> `1`
+- `qc degrees(pi)` -> `180`
+- `qc radians(180)` -> `3.14159...`
+
+### Factorials & Combinatorics
+- `qc 5!` -> `120`
 - `qc factorial(5)` -> `120`
-- `qc 5!` -> `120` (Note: `!` must be immediately after the number/parenthesis, e.g. `(2+3)!`)
-- `qc 2^10` -> `1024` (The `^` operator is automatically converted to power `**`)
+- `qc (3+2)!` -> `120`
+*(Note: `!` must be immediately after the number or parenthesis)*
+
+### Constants & Logarithms
+- `qc pi` -> `3.14159...`
+- `qc e` -> `2.71828...`
+- `qc log(e)` -> `1` (Natural log)
+- `qc log10(100)` -> `2`
+- `qc log2(8)` -> `3`
+- `qc log3(27)` -> `3` (Supports `logN(x)` syntax for any base `N`)
+
+### Rounding
+- `qc round(3.6)` -> `4`
+- `qc floor(3.9)` -> `3`
+- `qc ceil(3.1)` -> `4`
 
 ## Installation
 

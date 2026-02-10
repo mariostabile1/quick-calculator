@@ -7,7 +7,7 @@ from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 from ulauncher.api.shared.action.RenderResultListAction import RenderResultListAction
 from ulauncher.api.shared.action.CopyToClipboardAction import CopyToClipboardAction
 from calculator_logic import Calculator
-from simpleeval import NameNotDefined, OperatorNotDefined, FunctionNotDefined
+from simpleeval import NameNotDefined, OperatorNotDefined, FunctionNotDefined, FeatureNotAvailable
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class KeywordQueryEventListener(EventListener):
                                              name=result_str,
                                              description='Press Enter to copy result',
                                              on_enter=CopyToClipboardAction(result_str)))
-        except (NameNotDefined, OperatorNotDefined, FunctionNotDefined, SyntaxError, TypeError, ZeroDivisionError, ValueError) as e:
+        except (NameNotDefined, OperatorNotDefined, FunctionNotDefined, FeatureNotAvailable, SyntaxError, TypeError, ZeroDivisionError, ValueError) as e:
              # User error
             items.append(ExtensionResultItem(icon='images/icon.png',
                                              name='Invalid Expression',
