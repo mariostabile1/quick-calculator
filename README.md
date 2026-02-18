@@ -2,6 +2,8 @@
 
 A simple yet powerful scientific calculator for Ulauncher, now safer and more robust.
 
+Give a ⭐ if you like the extension.
+
 ## Features
 - **Fast Access**: Trigger with `qc` keywords.
 - **Secure Evaluation**: Uses `simpleeval` to safely calculate expressions without executing arbitrary code.
