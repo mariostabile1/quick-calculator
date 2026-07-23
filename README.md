@@ -53,6 +53,11 @@ Type `qc` followed by your mathematical expression.
 - `qc floor(3.9)` -> `3`
 - `qc ceil(3.1)` -> `4`
 
+### Simple Boolean
+ - `qc True == True` -> `True`
+ - `qc True != True` -> `False`
+ - `qc True or False` -> `True`
+
 ## Installation
 
 ### Prerequisites
